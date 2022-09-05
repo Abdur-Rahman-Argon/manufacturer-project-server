@@ -64,6 +64,14 @@ async function run() {
     });
 
     //
+    app.post("/review", async (req, res) => {
+      const query = {};
+      const cursor = await userReviewCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //
   } finally {
     //   await client.close();
   }
