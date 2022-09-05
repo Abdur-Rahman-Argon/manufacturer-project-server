@@ -21,8 +21,10 @@ async function run() {
     await client.connect;
 
     const toolsCollection = client.db("tools").collection("all-tools");
-    const collection = client.db("test").collection("userReview");
+    const userReviewCollection = client.db("tools").collection("userReview");
+    const ordersCollection = client.db("Orders").collection("myOrders");
 
+    //
     app.get("/allTools", async (req, res) => {
       const query = {};
       const cursor = await toolsCollection.find(query);
@@ -30,11 +32,18 @@ async function run() {
       res.send(result);
     });
 
+    //
     app.get("/allTools/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await toolsCollection.findOne(query);
+      res.send(result);
+    });
 
+    //
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      const result = await ordersCollection.insertOne(order);
       res.send(result);
     });
 
