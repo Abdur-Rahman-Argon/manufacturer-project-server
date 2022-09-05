@@ -48,6 +48,15 @@ async function run() {
     });
 
     //
+    app.get("/orders/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { customerEmail: email };
+      const cursor = await ordersCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //
   } finally {
     //   await client.close();
   }
