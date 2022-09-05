@@ -57,6 +57,13 @@ async function run() {
     });
 
     //
+    app.post("/review", async (req, res) => {
+      const order = req.body;
+      const result = await userReviewCollection.insertOne(order);
+      res.send(result);
+    });
+
+    //
   } finally {
     //   await client.close();
   }
