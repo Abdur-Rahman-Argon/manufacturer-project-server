@@ -5,6 +5,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
+const stripe = require("stripe")(process.env.Stripe_Secret);
+
 app.use(cors());
 app.use(express.json());
 
@@ -62,6 +64,43 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const result = await ordersCollection.deleteOne(query);
       res.send(result);
+    });
+
+    //
+    app.get("/getOrder/:orderId", async (req, res) => {
+      const id = req.params.orderId;
+      const query = { _id: ObjectId(id) };
+      const result = await ordersCollection.findOne(query);
+      res.send(result);
+    });
+
+    //
+    app.post("/payment", async (req, res) => {
+      const product = req.body;
+      const price = product.price;
+      const amount = parseInt(price) * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
+    });
+
+    // user payment status update his orders
+    app.patch("/paymentUpdate/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const payment = req.body;
+      const updateDoc = {
+        $set: {
+          paid: true,
+          paymentInfo: payment,
+        },
+      };
+      // const result = await myOrderCollection.insertOne(payment);
+      const updateOrder = await ordersCollection.updateOne(filter, updateDoc);
+      res.send({ updateOrder });
     });
 
     //
