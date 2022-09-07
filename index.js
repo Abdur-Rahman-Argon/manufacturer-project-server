@@ -29,6 +29,8 @@ async function run() {
 
     const userCollection = client.db("AllUsers").collection("users");
 
+    //--------------------------------------------------------
+
     //
     app.get("/allTools", async (req, res) => {
       const query = {};
@@ -46,9 +48,34 @@ async function run() {
     });
 
     //
+    app.delete("/toolDelete/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await toolsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //
+    app.post("/tools", async (req, res) => {
+      const order = req.body;
+      const result = await toolsCollection.insertOne(order);
+      res.send(result);
+    });
+
+    //-----------------------------------------------------
+
+    //
     app.post("/orders", async (req, res) => {
       const order = req.body;
       const result = await ordersCollection.insertOne(order);
+      res.send(result);
+    });
+
+    //
+    app.get("/allOrders", async (req, res) => {
+      const query = {};
+      const cursor = await ordersCollection.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
@@ -106,6 +133,23 @@ async function run() {
       res.send({ updateOrder });
     });
 
+    // user payment status update his orders
+    app.patch("/orderCancel/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const payment = req.body;
+      const updateDoc = {
+        $set: {
+          orderCancel: true,
+        },
+      };
+      // const result = await myOrderCollection.insertOne(payment);
+      const updateOrder = await ordersCollection.updateOne(filter, updateDoc);
+      res.send({ updateOrder });
+    });
+
+    //---------------------------------------------------------------
+
     //
     app.post("/review", async (req, res) => {
       const order = req.body;
@@ -120,6 +164,8 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    //-------------------------------------------------------
 
     //
     app.put("/user/:email", async (req, res) => {
@@ -143,6 +189,59 @@ async function run() {
         status: 200,
         success: true,
       });
+    });
+
+    //
+    app.get("/allUsers", async (req, res) => {
+      const query = {};
+      const cursor = await userCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //
+    app.get("/adminUser/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
+    //
+    app.delete("/removeUser/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // MAke Admin
+    app.patch("/makeAdmin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const payment = req.body;
+      const updateDoc = {
+        $set: {
+          Role: "Admin",
+        },
+      };
+      // const result = await myOrderCollection.insertOne(payment);
+      const updateOrder = await userCollection.updateOne(filter, updateDoc);
+      res.send({ success: true, result: updateOrder });
+    });
+
+    // MAke Admin
+    app.patch("/removeAdmin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const payment = req.body;
+      const updateDoc = {
+        $set: {
+          Role: null,
+        },
+      };
+      const updateOrder = await userCollection.updateOne(filter, updateDoc);
+      res.send({ success: true, result: updateOrder });
     });
 
     //
