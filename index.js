@@ -158,8 +158,17 @@ async function run() {
     });
 
     //
-    app.post("/review", async (req, res) => {
+    app.get("/review", async (req, res) => {
       const query = {};
+      const cursor = await userReviewCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //
+    app.get("/reviews/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
       const cursor = await userReviewCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
@@ -178,11 +187,25 @@ async function run() {
       };
       const result = await userCollection.updateOne(filter, updateDoc, options);
 
-      // const token = jwt.sign(
-      //   { email: email },
-      //   process.env.ACCESS_TOKEN_SECRET,
-      //   { expiresIn: "1h" }
-      // );
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1d" }
+      );
+
+      res.send({ result, status: 200, success: true, accessToken: token });
+    });
+
+    //
+    app.put("/UpdateProfile/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
 
       res.send({
         result,
